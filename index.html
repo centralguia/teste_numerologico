@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Numerológico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .result-section {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .navigation {
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Descubra sua Numerologia</h1>
+    <form id="numerologyForm">
+        <label for="fullName">Nome Completo:</label><br>
+        <input type="text" id="fullName" name="fullName" required><br><br>
+        <label for="birthDate">Data de Nascimento:</label><br>
+        <input type="date" id="birthDate" name="birthDate" required><br><br>
+        <button id="buttonNumerologyForm" type="submit">Calcular</button>
+    </form>
+
+    <h2>Resultado:</h2>
+    <div id="result">
+        <div class="result-section" id="lifePath">
+            <h3>Número do Caminho de Vida: <span id="lifePathNumber"></span></h3>
+            <p id="lifePathDescription"></p>
+        </div>
+        <div class="result-section" id="expression">
+            <h3>Número de Expressão: <span id="expressionNumber"></span></h3>
+            <p id="expressionDescription"></p>
+        </div>
+        <div class="result-section" id="soulUrge">
+            <h3>Número do Desejo da Alma: <span id="soulUrgeNumber"></span></h3>
+            <p id="soulUrgeDescription"></p>
+        </div>
+        <div class="result-section" id="personality">
+            <h3>Número da Personalidade: <span id="personalityNumber"></span></h3>
+            <p id="personalityDescription"></p>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn">Anterior</button>
+            <button id="nextBtn">Próximo</button>
+        </div>
+    </div>
+
+    <script>
+        const letterToNumber = {
+            A: 1, J: 1, S: 1,
+            B: 2, K: 2, T: 2,
+            C: 3, L: 3, U: 3,
+            D: 4, M: 4, V: 4,
+            E: 5, N: 5, W: 5,
+            F: 6, O: 6, X: 6,
+            G: 7, P: 7, Y: 7,
+            H: 8, Q: 8, Z: 8,
+            I: 9, R: 9
+        };
+
+        const numerologyDescriptions = {
+            lifePath: {
+                1: "Líder nato, independente e ambicioso.",
+                2: "Diplomático, cooperativo e sensível.",
+                3: "Criativo, comunicativo e sociável.",
+                4: "Prático, organizado e trabalhador.",
+                5: "Aventureiro, versátil e livre.",
+                6: "Responsável, cuidadoso e amoroso.",
+                7: "Introspectivo, analítico e espiritual.",
+                8: "Ambicioso, eficiente e focado no sucesso.",
+                9: "Humanitário, idealista e compassivo."
+            }
+        };
+
+        function reduceNumber(num) {
+            while (num > 9) {
+                num = num.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+            }
+            return num;
+        }
+
+        function calculateLifePathNumber(birthDate) {
+            const digits = birthDate.replace(/-/g, '').split('').map(Number);
+            const sum = digits.reduce((a, b) => a + b, 0);
+            return reduceNumber(sum);
+        }
+
+        document.getElementById('numerologyForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('fullName').value.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+            const birthDate = document.getElementById('birthDate').value;
+            
+            const lifePath = calculateLifePathNumber(birthDate);
+            
+            // Preencher os números
+            document.getElementById('lifePathNumber').innerText = lifePath;
+            
+            // Preencher as descrições
+            document.getElementById('lifePathDescription').innerText = numerologyDescriptions.lifePath[lifePath] || "Descrição não disponível.";
+            
+            // Mostrar a primeira seção
+            showSection(0);
+        });
+
+        document.getElementById('buttonNumerologyForm').addEventListener('click', function() {
+            const name = document.getElementById('fullName').value.trim();
+            const birthDate = document.getElementById('birthDate').value.trim();
+
+            // Verifica se o nome e a data de nascimento foram preenchidos
+            if (name !== "" && birthDate !== "") {
+                // Faz o formulário sumir
+                document.getElementById('numerologyForm').style.display = 'none';
+            } else {
+                alert("Por favor, preencha todos os campos corretamente.");
+            }
+        });
+
+        let currentSection = 0;
+        const sections = document.querySelectorAll('.result-section');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function showSection(index) {
+            sections.forEach((section, i) => {
+                if (i === index) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+            currentSection = index;
+            updateButtons();
+        }
+
+        function updateButtons() {
+            prevBtn.style.display = currentSection === 0 ? 'none' : 'inline-block';
+            nextBtn.style.display = currentSection === sections.length - 1 ? 'none' : 'inline-block';
+        }
+
+        prevBtn.addEventListener('click', function() {
+            if (currentSection > 0) {
+                showSection(currentSection - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', function() {
+            if (currentSection < sections.length - 1) {
+                showSection(currentSection + 1);
+            }
+        });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection(0);
+        });
+
+    // Função para realizar a narração
+    function narrarTexto(texto) {
+        const narrador = new SpeechSynthesisUtterance(texto);
+        
+        // Precarregando as vozes para evitar atrasos
+        window.speechSynthesis.onvoiceschanged = () => {
+            const voices = window.speechSynthesis.getVoices();
+            const antonio = voices.find(voice => voice.name.includes('Antonio'));
+
+            if (antonio) {
+                narrador.voice = antonio;
+            }
+            window.speechSynthesis.speak(narrador);
+        };
+    }
+
+    // Função para calcular e narrar o resultado do numerológico
+    function calcularNumerologia() {
+        const nomeCompleto = document.getElementById('fullName').value.trim();
+        const dataNascimento = document.getElementById('birthDate').value.trim();
+
+        if (nomeCompleto !== "" && dataNascimento !== "") {
+            // Obtendo o primeiro nome
+            const primeiroNome = nomeCompleto.split(' ')[0];
+
+            // Exemplo de cálculo do Caminho da Vida (só para teste)
+            const numeroCaminhoDaVida = calculateLifePathNumber(dataNascimento);
+
+            // Narra a introdução com o primeiro nome
+            narrarTexto(`Olá ${primeiroNome}, esse é o seu resultado numerológico.`);
+
+            // Narra o cálculo do Caminho da Vida e o resultado
+            setTimeout(() => {
+                narrarTexto(`O seu número do caminho da vida é ${numeroCaminhoDaVida}`);
+            }, 3000);
+
+            // Aqui você pode adicionar mais narrações com outros resultados
+        } else {
+            alert("Por favor, preencha todos os campos corretamente.");
+        }
+    }
+
+    // Aciona a narração quando o botão do formulário for clicado
+    document.getElementById('buttonNumerologyForm').addEventListener('click', calcularNumerologia);
+    </script>
+</body>
+</html>
